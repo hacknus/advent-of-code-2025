@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "advent-of-code-2023"
+name = "advent-of-code-2025"
 version = "0.1.0"
 dependencies = [
  "array2d",
