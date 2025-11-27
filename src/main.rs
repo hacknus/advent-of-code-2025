@@ -46,11 +46,11 @@ fn main() {
         }
         Some(problem) => {
             let start = Instant::now();
-            let answer_one = problem.part_one(format!("input/puzzle_{day}_1.txt").as_str());
+            let answer_one = problem.part_one(format!("input/puzzle_{day}.txt").as_str());
             println!("solving task one took {:?}", start.elapsed());
 
             let start = Instant::now();
-            let answer_two = problem.part_two(format!("input/puzzle_{day}_2.txt").as_str());
+            let answer_two = problem.part_two(format!("input/puzzle_{day}.txt").as_str());
             println!("solving task two took {:?}", start.elapsed());
 
             println!("Answer of Task Day {day}/1:");
