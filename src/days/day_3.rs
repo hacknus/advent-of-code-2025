@@ -120,10 +120,6 @@ impl Problem for DayThree {
 
         format!("{}", sum)
     }
-
-    // not 169832720574702, too low
-    // not 171963054926742, too low
-    // not 171912067589985, too low
 }
 
 #[cfg(test)]
