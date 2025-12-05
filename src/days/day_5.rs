@@ -102,13 +102,8 @@ impl Problem for DayFive {
             }
         }
 
-        let mut fresh_sets_hashed = HashSet::new();
-        for fresh_set in fresh_sets {
-            fresh_sets_hashed.insert(fresh_set);
-        }
-
         let mut counter = 0;
-        for set in fresh_sets_hashed {
+        for set in fresh_sets {
             counter += set.1 - set.0 + 1;
         }
 
