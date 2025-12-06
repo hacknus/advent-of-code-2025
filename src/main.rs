@@ -2,6 +2,8 @@
 mod days;
 mod io;
 mod problem;
+use colored::Colorize;
+use copypasta::{ClipboardContext, ClipboardProvider};
 
 use chrono::Datelike;
 use days::day_1::DayOne;
@@ -38,6 +40,9 @@ fn day_to_problem(day: usize) -> Option<Box<dyn Problem>> {
 }
 
 fn main() {
+    let mut ctx = ClipboardContext::new().unwrap();
+    let content = ctx.get_contents().unwrap();
+
     let current_date = chrono::Utc::now();
     let day = current_date.day();
     match day_to_problem(day as usize) {
@@ -52,6 +57,18 @@ fn main() {
             let start = Instant::now();
             let answer_two = problem.part_two(format!("input/puzzle_{day}.txt").as_str());
             println!("solving task two took {:?}", start.elapsed());
+            
+            if answer_two == "no solution yet" {
+                if ctx.get_contents().unwrap() == answer_one {
+                    println!("{}", "\nAttention! Answer 1 is not a new answer!\n".red())
+                }
+                ctx.set_contents(answer_one.to_owned()).unwrap();
+            } else {
+                if ctx.get_contents().unwrap() == answer_two {
+                    println!("{}", "\nAttention! Answer 2 is not a new answer!\n".red())
+                }
+                ctx.set_contents(answer_two.to_owned()).unwrap();
+            }
 
             println!("Answer of Task Day {day}/1:");
             println!("{answer_one}\n");
