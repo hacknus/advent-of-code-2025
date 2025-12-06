@@ -41,7 +41,6 @@ fn day_to_problem(day: usize) -> Option<Box<dyn Problem>> {
 
 fn main() {
     let mut ctx = ClipboardContext::new().unwrap();
-    let content = ctx.get_contents().unwrap();
 
     let current_date = chrono::Utc::now();
     let day = current_date.day();
