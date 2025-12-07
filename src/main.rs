@@ -56,7 +56,7 @@ fn main() {
             let start = Instant::now();
             let answer_two = problem.part_two(format!("input/puzzle_{day}.txt").as_str());
             println!("solving task two took {:?}", start.elapsed());
-            
+
             if answer_two == "no solution yet" {
                 if ctx.get_contents().unwrap() == answer_one {
                     println!("{}", "\nAttention! Answer 1 is not a new answer!\n".red())
