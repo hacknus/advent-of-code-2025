@@ -1,81 +1,46 @@
 use crate::io::read_file_lines;
 use crate::problem::Problem;
 use itertools::Itertools;
+use std::collections::HashMap;
 
 pub struct DaySeven {}
 
-struct Node {
+fn walk_down(
     position: (usize, usize),
-    left: Option<Box<Node>>,
-    right: Option<Box<Node>>,
-    is_leaf: bool,
-}
-
-fn build_tree(
-    current_node: &mut Node,
     beam_splitters: &Vec<(usize, usize)>,
     x_max: usize,
     y_max: usize,
-) {
-    let (x, y) = current_node.position;
+    states: &mut HashMap<(usize, usize), u64>,
+) -> u64 {
+    let mut counter = 0;
+    let (x, y) = position;
+    let mut checked_left = false;
+    let mut checked_right = false;
+    if let Some(c) = states.get(&(x, y)) {
+        return *c;
+    }
     for y_i in y..y_max {
         // check left
-        if x > 0 && beam_splitters.contains(&(x - 1, y_i)) && current_node.left.is_none() {
-            let mut left = Node {
-                position: (x - 1, y_i),
-                left: None,
-                right: None,
-                is_leaf: false,
-            };
-            build_tree(&mut left, beam_splitters, x_max, y_max);
-            current_node.left = Some(Box::from(left));
-        }
-        // check right
-        if x < x_max - 1 && beam_splitters.contains(&(x + 1, y_i)) && current_node.right.is_none() {
-            let mut right = Node {
-                position: (x + 1, y_i),
-                left: None,
-                right: None,
-                is_leaf: false,
-            };
-            build_tree(&mut right, beam_splitters, x_max, y_max);
-            current_node.right = Some(Box::from(right));
-        }
-        
-        // check leaves
-        if y_i == y_max - 1 && current_node.right.is_none() {
-            let right = Node {
-                position: (x + 1, y_i),
-                left: None,
-                right: None,
-                is_leaf: true,
-            };
-            current_node.right = Some(Box::from(right));
-        }
-        if y_i == y_max - 1 && current_node.left.is_none() {
-            let left = Node {
-                position: (x - 1, y_i),
-                left: None,
-                right: None,
-                is_leaf: true,
-            };
-            current_node.left = Some(Box::from(left));
-        }
-    }
-}
+        if beam_splitters.contains(&(x, y_i)) {
+            // found a beam splitter
+            if x > 0 && !checked_left {
+                checked_left = true;
+                counter += walk_down((x - 1, y_i), beam_splitters, x_max, y_max, states);
+            }
 
-fn count_leaves(current_node: &Node) -> u32 {
-    if current_node.is_leaf {
-        return 1;
+            // check right
+            if x < x_max - 1 && !checked_right {
+                checked_right = true;
+                counter += walk_down((x + 1, y_i), beam_splitters, x_max, y_max, states);
+            }
+        }
+
+        if y_i == y_max - 1 && !checked_right && !checked_left {
+            counter = 1;
+        }
     }
-    let mut counter = 0;
-    if let Some(left) = &current_node.left {
-        counter += count_leaves(left);
-    }
-    if let Some(right) = &current_node.right {
-        counter += count_leaves(right);
-    }
-    counter 
+    states.insert((x, y), counter);
+    counter
 }
 
 fn scan_up(
@@ -143,23 +108,15 @@ impl Problem for DaySeven {
             }
         }
 
-        let mut root = Node {
-            position: start,
-            left: None,
-            right: None,
-            is_leaf: false,
-        };
+        let mut states = HashMap::new();
 
-        build_tree(
-            &mut root,
+        let counter = walk_down(
+            start,
             &beam_splitters,
             contents[0].len(),
             contents.len(),
+            &mut states,
         );
-        
-        println!("built tree!");
-        
-        let counter = count_leaves(&root);
 
         format!("{}", counter)
     }
