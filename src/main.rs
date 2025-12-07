@@ -58,12 +58,12 @@ fn main() {
             println!("solving task two took {:?}", start.elapsed());
 
             if answer_two == "no solution yet" {
-                if ctx.get_contents().unwrap() == answer_one {
+                if ctx.get_contents().unwrap_or("".to_string()) == answer_one {
                     println!("{}", "\nAttention! Answer 1 is not a new answer!\n".red())
                 }
                 ctx.set_contents(answer_one.to_owned()).unwrap();
             } else {
-                if ctx.get_contents().unwrap() == answer_two {
+                if ctx.get_contents().unwrap_or("".to_string()) == answer_two {
                     println!("{}", "\nAttention! Answer 2 is not a new answer!\n".red())
                 }
                 ctx.set_contents(answer_two.to_owned()).unwrap();
