@@ -2,7 +2,7 @@ use crate::io::read_file_lines;
 use crate::problem::Problem;
 use num::integer::Roots;
 use num::Integer;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fmt::Display;
 use std::ops::Index;
 
@@ -45,19 +45,18 @@ impl Problem for DayEight {
                 y: pos[1],
                 z: pos[2],
             };
-            boxes.push(b.clone());
+            boxes.push(b);
         }
 
         let mut distances = vec![];
 
         for i in 0..boxes.len() {
-            for j in (i+1)..boxes.len() {
-
+            for j in (i + 1)..boxes.len() {
                 let dist = boxes[i].distance(&boxes[j]);
                 distances.push((dist, (i, j)));
             }
         }
-        
+
         distances.sort_by_key(|a| a.0);
 
         let mut circuits: Vec<HashSet<usize>> = vec![];
@@ -109,7 +108,7 @@ impl Problem for DayEight {
 
         circuits.sort_by_key(|d| d.len());
         circuits.reverse();
-        
+
         let mut prod = 1;
         for i in 0..3 {
             prod *= circuits[i].len();
@@ -136,30 +135,32 @@ impl Problem for DayEight {
         let mut distances = vec![];
 
         for i in 0..boxes.len() {
-            for j in (i+1)..boxes.len() {
-
+            for j in (i + 1)..boxes.len() {
                 let dist = boxes[i].distance(&boxes[j]);
                 distances.push((dist, (i, j)));
             }
         }
-        
+
         // println!("distances:");
         // for d in distances.iter() {
         //     println!("{}, {:?}, {:?}", d.0, boxes[d.1.0], boxes[d.1.1]);
         // }
-        
+
         distances.sort_by_key(|a| a.0);
-        
-        let mut circuits: Vec<HashSet<usize>> = boxes.iter().map(|b| {
-            let mut hs = HashSet::new();
-            hs.insert(boxes.iter().position(|x| x == b).unwrap());
-            hs
-        } ).collect();
+
+        let mut circuits: Vec<HashSet<usize>> = boxes
+            .iter()
+            .map(|b| {
+                let mut hs = HashSet::new();
+                hs.insert(boxes.iter().position(|x| x == b).unwrap());
+                hs
+            })
+            .collect();
 
         let mut x_prod = 0;
         let mut k = 0;
 
-        while circuits.len() != 1  {
+        while circuits.len() != 1 {
             let (d, (i, j)) = distances[k];
 
             let mut solo = true;
@@ -177,7 +178,7 @@ impl Problem for DayEight {
                     solo = false;
                 }
             }
-            
+
             if solo {
                 let mut new_circuit = HashSet::new();
                 new_circuit.insert(i);
@@ -202,7 +203,7 @@ impl Problem for DayEight {
                 }
                 circuits.push(new_circuit);
             }
-            
+
             x_prod = boxes[i].x * boxes[j].x;
 
             k += 1;
