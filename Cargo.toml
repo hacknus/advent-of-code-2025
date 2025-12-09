@@ -16,6 +16,7 @@ ndarray = "0.17"
 indexmap = "2.1.0"
 colored = "3"
 copypasta = "0.10.2"
+indicatif = "0.18.3"
 
 [profile.release]
 overflow-checks = true
