@@ -1,33 +1,67 @@
 use crate::io::read_file_lines;
 use crate::problem::Problem;
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 pub struct DayNine {}
 
-fn area_is_green(position: (i64, i64), edges: &Vec<((i64, i64), (i64, i64))>) -> bool {
-    let (x, y) = position;
-    // lets do ray-cast! if any point crosses two edges, we are in a non-green area
+fn area_is_green(
+    a: (i64, (i64, i64), (i64, i64)),
+    edges: &Vec<((i64, i64), (i64, i64))>,
+    cache: &mut HashMap<(i64, i64), bool>,
+) -> bool {
+    let x_min = a.1.0.min(a.2.0);
+    let x_max = a.1.0.max(a.2.0);
+    let y_min = a.1.1.min(a.2.1);
+    let y_max = a.1.1.max(a.2.1);
 
-    let mut h_crosses = 0;
-    let mut v_crosses = 0;
-    for edge in edges.iter() {
-        let (p1, p2) = edge;
-        // check if the point will cross the edge in the horizontal direction
-        if p1.0 == p2.0 {
-            if (p1.0 > x) && (y > p1.1.min(p2.1) && y < p2.1.max(p1.1)) {
-                h_crosses += 1;
+    for x in x_min..=x_max {
+        for y in y_min..=y_max {
+            if let Some(b) = cache.get(&(x, y)) {
+                if !*b {
+                    return false;
+                } else {
+                    continue;
+                }
+            }
+
+            // lets do ray-cast! if any point crosses two edges, we are in a non-green area
+            let mut h_crosses = 0;
+            let mut v_crosses = 0;
+            for edge in edges.iter() {
+                let (p1, p2) = edge;
+                // check if the point will cross the edge in the horizontal direction
+                if p1.0 == p2.0 {
+                    if (p1.0 >= x) && (y >= p1.1.min(p2.1) && y <= p2.1.max(p1.1)) {
+                        h_crosses += 1;
+                    }
+                }
+
+                // if p1.1 == p2.1 {
+                //     if p1.1 == y && p1.0 >= x && p2.0 >= x {
+                //         h_crosses -= 1;
+                //     }
+                // }
+
+                // check if the point will cross the edge in the vertical direction
+                // if p1.1 == p2.1 {
+                //     if (p1.1 >= y) && (x >= p1.0.min(p2.0) && x <= p2.0.max(p1.0)) {
+                //         v_crosses += 1;
+                //     }
+                // }
+                // 
+                // if p1.0 == p2.0 {
+                //     if p1.0 == x && p1.1 >= y && p2.1 >= y {
+                //         v_crosses -= 1;
+                //     }
+                // }
+            }
+            if h_crosses % 2 == 0 {
+                cache.insert((x, y), false);
+                return false;
+            } else {
+                cache.insert((x, y), true);
             }
         }
-
-        // check if the point will cross the edge in the vertical direction
-        if p1.1 == p2.1 {
-            if (p1.1 > y) && (x > p1.0.min(p2.0) && x < p2.0.max(p1.0)) {
-                v_crosses += 1;
-            }
-        }
-    }
-    if h_crosses % 2 == 0 && v_crosses % 2 == 0 {
-        return false;
     }
 
     true
@@ -84,7 +118,7 @@ impl Problem for DayNine {
 
         let mut edges = vec![];
 
-        let mut allowed_tiles = HashSet::new();
+        let mut cache: HashMap<(i64, i64), bool> = HashMap::new();
 
         for i in 0..points.len() {
             let a = points[i];
@@ -92,46 +126,22 @@ impl Problem for DayNine {
             edges.push((a, b));
             for x in a.0.min(b.0)..=b.0.max(a.0) {
                 for y in a.1.min(b.1)..=b.1.max(a.1) {
-                    allowed_tiles.insert((x, y));
+                    cache.insert((x, y), true);
                 }
             }
         }
 
         let mut area = 0;
-        let x_min_map = points.iter().map(|p| p.0).min().unwrap();
-        let x_max_map = points.iter().map(|p| p.0).max().unwrap();
-        let y_min_map = points.iter().map(|p| p.1).min().unwrap();
-        let y_max_map = points.iter().map(|p| p.1).max().unwrap();
 
-        dbg!(x_min_map, x_max_map, y_min_map, y_max_map);
-
-        let mut i = 0;
-        for x in x_min_map..=x_max_map {
-            for y in y_min_map..=y_max_map {
-                if i % 100000 == 0 {
-                    // println!("Checking tile: {}/{}", i, (x_max_map - x_min_map) * (y_max_map - y_min_map));
-                }
-                if area_is_green((x, y), &edges) {
-                    allowed_tiles.insert((x, y));
-                }
-                i += 1;
-            }
-        }
-
-        println!("tiles: {}, edges: {}", allowed_tiles.len(), edges.len());
-
-        'outer: for (i, a) in areas.iter().enumerate() {
+        for (i, a) in areas.iter().enumerate() {
             if i % 1000 == 0 {
                 println!("Checking area: {}/{} with size: {}", i, areas.len(), a.0);
             }
-            for x in a.1.0.min(a.2.0)..=a.2.0.max(a.1.0) {
-                for y in a.1.1.min(a.2.1)..=a.2.1.max(a.1.1) {
-                    if !allowed_tiles.contains(&(x, y)) {
-                        println!("Checking area: {},{} of area with size: {}", x, y, a.0);
-                        continue 'outer;
-                    }
-                }
+
+            if !area_is_green(*a, &edges, &mut cache) {
+                continue;
             }
+
             area = a.0;
             break;
         }
@@ -141,6 +151,10 @@ impl Problem for DayNine {
 
     // not 909602, too low
     // not 973336, too low
+    // not 466922, too low
+    // not 820536, too low
+    // not 91189930
+    // not 40244622
 }
 
 #[cfg(test)]
